@@ -1,0 +1,6 @@
+venv/
+crypto.20250401
+*.c
+*.pyd
+*.pyx
+build/

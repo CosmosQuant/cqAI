@@ -1,0 +1,1046 @@
+[
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 10,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 10,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 10,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 10,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 30,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 30,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 30,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 30,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 60,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 60,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 60,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 3,
+        "hold_period": 60,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 10,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 10,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 10,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 10,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 30,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 30,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 30,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 30,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 60,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 60,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 60,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 7,
+        "hold_period": 60,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 10,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 10,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 10,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 10,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 30,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 30,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 30,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 30,
+        "threshold": 30
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 60,
+        "threshold": 5
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 60,
+        "threshold": 10
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 60,
+        "threshold": 20
+    },
+    {
+        "ticker": "btc",
+        "data_folder": "data/btc_csv",
+        "windows": [
+            3,
+            7,
+            14
+        ],
+        "hold_periods": [
+            10,
+            30,
+            60
+        ],
+        "thresholds": [
+            5,
+            10,
+            20,
+            30
+        ],
+        "num_of_share": 1,
+        "cost_ratio": 0.001,
+        "slippage_ratio": 0.0,
+        "longshort": "long",
+        "signal_type": "RSI",
+        "plot": false,
+        "window": 14,
+        "hold_period": 60,
+        "threshold": 30
+    }
+]
