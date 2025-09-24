@@ -1,8 +1,6 @@
 # src/data.py - Data loading and preprocessing
 import pandas as pd
 import numpy as np
-import glob
-import os
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from abc import ABC, abstractmethod
@@ -12,6 +10,24 @@ TIMESTAMP_COLUMNS = ['datetime', 'time', 'timestamp', 'date', 'Open Time']
 
 # Standard column format
 STANDARD_COLUMNS = ['datetime', 'open', 'high', 'low', 'close', 'volume', 'oi']
+
+def generate_test_data(periods: int = 100000, seed: int = 42) -> pd.DataFrame:
+    """
+    Generate synthetic OHLCV data for testing purposes.
+    """
+    np.random.seed(seed)
+    datetime = pd.date_range('2025-01-01', periods=periods, freq='min')
+    prices = 100 + np.cumsum(np.random.randn(periods) * 2)
+    
+    return pd.DataFrame({
+        'datetime': datetime,
+        'open': prices * 0.99,
+        'high': prices * 1.02,
+        'low': prices * 0.98,
+        'close': prices,
+        'volume': np.random.randint(1000, 10000, periods),
+        'oi': np.random.randint(100, 1000, periods)  # Open Interest
+    })
 
 def read_xts(path: str, show_info: bool = True) -> pd.DataFrame:
     """
@@ -286,6 +302,7 @@ if __name__ == "__main__":
     
     # Test case with direct DataSource usage (concise syntax)
     ds_binance = BinanceDataSource() # ib_source = IBDataSource()
-    df = ds_binance.load_data(folder_path='data/btc_csv/', market_keyword='btc', show_info=False)
+    df = ds_binance.load_data(folder_path='rawdata/btc_csv/', market_keyword='btc', show_info=False)
     print(df.head(), df.tail())
     
+

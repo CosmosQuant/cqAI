@@ -6,15 +6,18 @@
 **目标**: 跑通完整流程 `train → test → yhat → signals → pnl`
 
 #### Day 1-2: 基础框架
-- [ ] **单一入口**: `run.py` + YAML配置解析
-- [ ] **data.py**: 基于现有DataHandler的简化版本
-- [ ] **requirements.txt**: 最小依赖包
+- [X] **单一入口**: `run.py` + YAML配置解析
+- [X] **data.py**: 基于现有DataHandler的简化版本
+- [X] **requirements.txt**: 最小依赖包
 
 #### Day 3-4: 核心流程
-- [ ] **features.py**: 
+- [X] **features.py**: 
   - 保留现有`fast_SMA`, `fast_std`, `RSI`
   - 简单注册表: `FEATURES = {'sma': fast_SMA, 'rsi': RSI}`
   - `make_features(df, feature_list)` 函数
+- [ ] **features.py**: 
+  - create label as forward returns (methods could be price diff, return, or log diff)
+  - create a complete dataset combining features and label - allowing when there should be a time lag
 - [ ] **cv.py**: 
   - 抽象基类 `Splitter(split)`
   - `WalkForwardSplitter` 基础实现 (OOP扩展点)

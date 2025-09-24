@@ -20,7 +20,7 @@ DEVLOG.md
 
 
 ######################################################################################
-## 2025-01-23
+## 2025-09-22
 
 ### Goals
 - Implement OOP architecture for data sources
@@ -74,19 +74,36 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 - Performance benchmarking and memory usage optimization
 
 ######################################################################################
-## 2025-01-24
+## 2025-09-23
 
 ### Goals
+- Update cqAI_main.py to use new data loading architecture
+
 
 ### Work done
 - **Removed DataManager class** - Eliminated unnecessary complexity following YAGNI principle
 - **Moved load_data to DataSource ABC** - Direct usage: `BinanceDataSource().load_data(folder_path)`
 - **Created IBDataSource placeholder** - Ready for future IB data implementation
+- **Updated cqAI_main.py** - Replaced `data.load_ohlcv()` with new `BinanceDataSource().load_data()`
+- **Implemented feature caching** - Added `use_cache=True` parameter to `fast_SMA()` and `fast_std()` functions with global `_CACHE` dictionary
+- **Implemented Feature engineering architecture** - `Feature` class with registry pattern, `generate_feature_objects()` for auto parameter combinations
+- **CRITICAL: Removed all caching** - Eliminated `_CACHE` and `use_cache` parameters due to data confusion safety issues
+
 
 ### Decisions
-- **D-0008 — Remove DataManager**: DataManager was over-engineered for current needs, direct DataSource usage is 
+- **D-0008 — Remove DataManager**: DataManager was over-engineered for current needs, direct DataSource usage is simpler
+- **D-0009 — Feature naming convention**: Standardized to `{feature}_{param1}_{param2}` format (e.g., `maratio_5_20`). feature name doesn't allow '_'
+- **D-0010 — OOP Feature architecture**: Class-based approach for better extensibility and parameter management
+- **D-0011 — Registry pattern**: Decorator-based registration for clean feature function organization
+- **D-0012 — CRITICAL: Disable caching for safety**: Cache keys (`sma_{window}`) caused data confusion between close/volume/high/low
 
 ### TODO
+- Add remaining features categories from R code
 - Implement actual IB data format when data becomes available
-- Add data validation and error handling
+- Improve SR calculation: Better handling of std_series=0 cases (currently sets to 0, should consider mean value)
+
+### TODO - optional
+- for large n rank, use approximation method
 - Consider adding factory functions only if multiple dynamic source selection is needed
+- Implement safe caching solution (Feature-level caching recommended)
+- Add data validation and error handling
