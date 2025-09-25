@@ -26,10 +26,31 @@ don't prefer:
 
 - don't add unnecessary print in the codes, and try to combine them in fewer line of codes for print results or prompts
 
-- keep MVP concepts and occam razor principle - don't add codes or new features unless they are necessary or will significantly improve the project
+- follow MVP principle
+
+- follow occam razor principle - don't add codes or new features unless they are necessary or will significantly improve the project
 
 - use OOP and functional programming when they could significantly improve the efficiency
 
 - for logging, never write the verify or check or test steps - only keep the coding related work
 
 - to avoid path issue, DON'T use python .\src\features.py, use python -m src.features
+
+- everytime, after we implment the plan or a part of the plan,
+  * add or update completed task into DEVLOG.md '### Work done' session
+  * add '# TODO' into DEVLOG.md '### TODO' session
+  * update the just finished task's planning part to the simplest version (no need to have detailed definition)
+
+- when you update a function, always check and update other places calling this function
+
+- Documentation and TODO Management
+  * When completing tasks or making improvements, add future enhancement ideas as TODO items in the TODO section rather than updating the "Work done" section
+  * Keep completed work documented in the "Work done" section separate from future tasks
+  * Use the format - [ ] description of future enhancement for TODO items
+  * This approach maintains clean separation between what's been accomplished and what's planned for the future
+
+- Testing and Development
+  * Generate test code directly in terminal commands and run them immediately
+  * Avoid creating temporary test files unless absolutely necessary
+  * Use existing test infrastructure for verification
+  * Test directly in working environment using python -c "..." commands

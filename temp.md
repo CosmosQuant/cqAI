@@ -1,143 +1,54 @@
-lsXX = unique(c(1,3,10,40,100))
-lsNN = unique(c(1,2,5,10,40,100))
+def run_std(series: pd.Series, window: int, type_exact: bool=False, sample: bool=True) -> pd.Series:
+    if window <= 0:
+        raise ValueError("window must be positive")
 
-xSR <- function(data, lsxx=lsXX,lsnn=lsNN, signLS=0){
-  # runRank(runSR(diff(SMA(Close,xx)),mm),nRank)
-  signLS = ifelse(signLS>=0,1,-1)
-  lsFactor = list(); bar=data$bar
-  for(xx in lsxx){
-    ma = SMA(Cl(bar), xx)
-    for(nn in lsnn){
-      if(nn<=1) next
-      tmp = runSR(diff(ma),nn)
-      tmp[is.na(tmp)]=0; tmp[tmp > 10] = 10; tmp[tmp < -10] = -10
-      lsFactor[[paste("xSR",xx,nn,sep='.')]] <- tmp * signLS
-    }
-  }
-  return(lsFactor)
-}
+    isnan = series.isna()
+    if isnan.all():
+        return pd.Series(np.nan, index=series.index)
+    first_valid_pos = isnan.idxmin()
+    first_valid_idx = series.index.get_loc(first_valid_pos)
+    if isnan.iloc[first_valid_idx:].any():
+        raise ValueError("NaNs are not allowed after the first valid value.")
 
-xROC <- function(data, lsnn=lsNN, lsmm=lsNN, signLS=0){
-  ## runRank(diff(Cl(bar),nn)/runSD(diff(Cl(bar)),mm),nRank)
-  signLS = ifelse(signLS>=0,1,-1)
-  lsFactor = list(); bar=data$bar
-  for(mm in lsmm){
-    if(mm<=1) next
-    volLT = (runSD(diff(Cl(bar)),mm))
-    for(nn in lsnn){
-      if(nn>mm) next
-      ratio = diff(Cl(bar),nn)/volLT
-        ratio[abs(ratio)==Inf]=NA
-        ratio = xts.fill2(ratio,ratio)
-      lsFactor[[paste("xROC",nn,mm,sep='.')]] <- ratio * signLS
-    }
-  }
-  return(lsFactor)
-}
+    # Special case: window == 1
+    if window == 1:
+        if sample:
+            # ddof=1 with 1-point window -> NaN (matches pandas)
+            return pd.Series(np.nan, index=series.index)
+        else:
+            # ddof=0 with 1-point window -> 0 from first_valid onward
+            out = np.full(len(series), np.nan, dtype=np.float64)
+            out[first_valid_idx:] = 0.0
+            return pd.Series(out, index=series.index)
 
-xdiffMA <- function(data, lsmm=lsNN, lsnn=unique(c(lsNN)), signLS=0){
-  # runRank(SMA(Close,mm)/SMA(Close,nn),nRank)
-  signLS = ifelse(signLS>=0,1,-1)
-  lsFactor = list(); bar=data$bar
-  for(mm in lsmm)
-    for(nn in lsnn)
-    {
-      if(mm>=nn) next
-      ratio = SMA(Cl(bar),mm) / SMA(Cl(bar),nn)
-        ratio[abs(ratio)==Inf]=NA
-        ratio = xts.fill2(ratio,ratio)
-      lsFactor[[paste("xdiffMA",mm,nn,sep='.')]] <- (ratio - 1) * signLS
-    }
-  return(lsFactor)
-}
+    sma_x = run_SMA(series, window, exact=type_exact)
+    sma_x2 = run_SMA(series * series, window, exact=type_exact)
 
-xRSI <- function(data, lsxx=lsXX, lsnn=lsNN, signLS=0){
-  ## value is symmetric
-  # runRank(RSI(SMA(Close,xx),mm), nRank)
-  signLS = ifelse(signLS>=0,1,-1)
-  lsFactor = list(); bar=data$bar
-  for(xx in lsxx){
-    ma = SMA(Cl(bar),xx)
-    for(nn in lsnn){
-      if(nn==1) next
-      lsFactor[[paste("xRSI",xx,nn,sep='.')]] <- (RSI(ma,nn)-50)/100 * signLS
-    }
-  }
-  return(lsFactor)
-}
+    var = sma_x2 - (sma_x ** 2)
 
+    var_values = var.values.astype(np.float64)
+    np.maximum(var_values, 0.0, out=var_values)
 
-xATR <- function(data, lsnn=lsNN){
-  # runRank(myATR(bar,n),nRank)
-  lsFactor = list()
-  for(n in lsnn) lsFactor[[paste("xATR",n,sep='.')]] <- myATR(data$bar,n)
-  return(lsFactor)
-}
+    if not sample:
+        return pd.Series(np.sqrt(var_values), index=series.index)
 
-xSd0 <- function(data, lsxx=lsXX, lsnn=lsNN){
-  ## runRank(runSD(SMA(Close,xx),nn),nRank)
-  lsFactor = list()
-  for(xx in lsxx){
-    ma = SMA(Cl(data$bar),xx)
-    for(nn in lsnn){
-      if(nn<=1) next
-      lsFactor[[paste("xSd0",xx,nn,sep='.')]] <- runSD(ma,nn)
-    }
-  }
-  return(lsFactor)
-}
+    if type_exact:
+        correction = np.sqrt(window / (window - 1.0))
+        return pd.Series(np.sqrt(var_values) * correction, index=series.index)
+    else:
+        n_valid = min(window, len(series) - first_valid_idx)
+        n = np.empty(len(series), dtype=np.float64)
+        n[:] = np.nan
+        if n_valid > 0:
+            seq = np.arange(1, n_valid + 1, dtype=np.float64)
+            n[first_valid_idx:first_valid_idx + n_valid] = seq
+            if first_valid_idx + n_valid < len(series):
+                n[first_valid_idx + n_valid:] = window
 
-xSd1 <- function(data, lsxx=lsXX,lsnn=lsNN){
-  ## runRank(runSD(diff(SMA(Close,xx)),nn),nRank)
-  lsFactor = list()
-  for(xx in lsxx){
-    ma = SMA(Cl(data$bar),xx)
-    for(nn in lsnn){
-      if(nn<=1) next
-      lsFactor[[paste("xSd1",xx,nn,sep='.')]] <- runSD(diff(ma),nn)
-    }
-  }
-  return(lsFactor)
-}
+        correction = np.full(len(series), np.nan, dtype=np.float64)
+        mask = n > 1
+        correction[mask] = np.sqrt(n[mask] / (n[mask] - 1.0))
 
-xSd2 <- function(data, lsxx=lsXX,lsnn=lsNN){
-  ## runRank(runSD(diff(diff(SMA(Close,xx))),nn),nRank)
-  lsFactor = list()
-  for(xx in lsxx){
-    ma = SMA(Cl(data$bar),xx)
-    for(nn in lsnn){
-      if(nn<=1) next
-      lsFactor[[paste("xSd2",xx,nn,sep='.')]] <- runSD(diff(diff(ma)),nn)
-    }
-  }
-  return(lsFactor)
-}
-
-xRange <- function(data, lsnn=lsNN){
-  ##runRank(myRange(bar,nn),nRank)
-  lsFactor = list()
-  for(nn in unique(lsnn)){
-    lsFactor[[paste("xRange",nn,sep='.')]] = runMax(Hi(data$bar),nn) - runMin(Lo(data$bar),nn)
-  }
-  return(lsFactor)
-}
-
-xRatioRange <- function(data, lsmm=lsNN, lsnn=lsNN){
-  ## runRank(myRange(bar,mm)/myRange(bar,nn), nRank)
-  lsFactor = list(); bar=data$bar
-  lsRange = list()
-  for(kk in unique(c(lsmm,lsNN))){
-    lsRange[[paste0("range",kk)]] = runMax(Hi(bar),kk) - runMin(Lo(bar),kk)
-  }
-  for(mm in lsmm)
-    for(nn in lsnn)
-    {
-      if( mm >= nn) next
-      range1=lsRange[[paste0("range",mm)]]; range2=lsRange[[paste0("range",nn)]]
-      ratio = range1/range2
-        ratio[abs(ratio)==Inf]=NA
-        ratio = xts.fill2(ratio,ratio)
-      lsFactor[[paste("xRatioRange",mm,nn,sep='.')]] <- ratio
-    }
-  return(lsFactor)
-}
+        std = np.sqrt(var_values)
+        out = std * correction
+        return pd.Series(out, index=series.index)

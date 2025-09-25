@@ -4,12 +4,6 @@
 
 ## 📋 Current Status Analysis
 
-### **Existing Architecture**
-- ✅ **Feature Engineering**: Complete `Feature` class with registry pattern, automatic parameter generation
-- ✅ **Signal Generation**: `yhat_to_signals()` converts predictions to trading signals
-- ✅ **Backtest Framework**: `simulate()` calculates PnL from signals and prices
-- ❌ **Missing**: Label generation for supervised learning (forward returns)
-
 ### **Current Gap**
 From `cqAI_main.py` line 34-35:
 ```python
@@ -30,177 +24,138 @@ The system needs a `make_labels()` function and supporting architecture to creat
 - **Time-Aware**: Handle time lags, forward-looking windows, and alignment
 - **Performance**: Optimized calculations using existing fast functions
 
-### **Label Types to Support**
+### **Label Processing Pipeline**
 
-1. **Forward Returns**
-   - Simple return: `(price[t+h] - price[t]) / price[t]`
-   - Log return: `log(price[t+h] / price[t])`
-   - Adjusted return: Handle dividends, splits
+**Architecture**: `Forward Returns (Base) → Risk-Adjustment (Optional) → Directional Transform (Optional)`
 
-2. **Price Movements**
-   - Absolute price change: `price[t+h] - price[t]`
-   - Percentage change: `(price[t+h] - price[t]) / price[t] * 100`
+#### **1. Forward Returns (Always Base Layer)**
+All labels start with forward return calculation using one of 4 methods:
+   - **`price_diff`**: `price[t+h] - price[t]` (absolute change)
+   - **`return`**: `(price[t+h] - price[t]) / price[t]` (relative change)
+   - **`log_return`**: `log(price[t+h] / price[t])` (log difference)
+   - **`ma_return`**: Using `ma_price from t+h to t+h+ma_window` (smoothed future price)
 
-3. **Directional Labels**
-   - Binary: `1` if up, `-1` if down, `0` if neutral
-   - Multi-class: Quantile-based classification
-   - Threshold-based: Custom thresholds for classification
+#### **2. Risk-Adjustment (Optional Processing Layer)**
+Similar to `normalize_feature()` in Feature class - transforms raw returns:
+   - **`volatility`**: Return per unit volatility (Sharpe-like)
+   - **`rolling_sharpe`**: Rolling Sharpe ratio over forward periods
+   - **`vol_normalized`**: Volatility-normalized returns for ML stability
+   - **`mae_mfe`**: Maximum adverse/favorable excursion ratios
 
-4. **Risk-Adjusted Labels**
-   - Return per unit volatility
-   - Sharpe-like ratios over forward periods
-   - Maximum adverse excursion (MAE) / Maximum favorable excursion (MFE)
+#### **3. Directional Transform (Optional Final Layer)**
+Similar to another processing step - converts continuous values to discrete labels:
+   - **`binary`**: `1` if up, `-1` if down, `0` if neutral (threshold-based)
+   - **`quantile`**: Multi-class classification based on quantiles (e.g., 3-class, 5-class)
+   - **`threshold`**: Custom threshold-based classification with multiple levels
 
 ---
 
 ## 🏗️ Technical Architecture
 
-### **1. Core Label Class**
+### **1. Standalone Utility Functions**
+
+```python
+def discretize(series: pd.Series, method: str, threshold: float = 0.0, n_classes: int = 3) -> pd.Series:
+    """Convert continuous values to discrete labels using various methods."""
+    # ✅ IMPLEMENTED: Binary, quantile methods
+```
+
+### **2. Core Label Class**
 
 ```python
 class Label:
-    """
-    Base class for label generation with registry pattern.
-    
-    Similar to Feature class but focused on forward-looking targets.
-    """
-    _LABEL_REGISTRY = {}
-    
-    def __init__(self, df: pd.DataFrame, label_type: str, **kwargs):
-        self.df = df
-        self.label_type = label_type
-        self.label = None
-        self.PARA = {
-            'horizon': kwargs.get('horizon', 1),          # Forward periods
-            'column': kwargs.get('column', 'close'),      # Price column
-            'method': kwargs.get('method', 'return'),     # Calculation method
-            'lag': kwargs.get('lag', 0),                  # Time lag offset
-            'clip_pct': kwargs.get('clip_pct', None),     # Outlier clipping
-        }
-        for k, v in kwargs.items():
-            self.PARA[k] = v
-    
-    @classmethod
-    def register(cls, name):
-        def decorator(fn):
-            cls._LABEL_REGISTRY[name] = fn
-            return fn
-        return decorator
-    
-    def calculate_label(self):
-        if self.label_type not in self._LABEL_REGISTRY:
-            raise ValueError(f"Unsupported label type: {self.label_type}")
-        self._LABEL_REGISTRY[self.label_type](self)
-        if self.PARA.get('clip_pct') is not None:
-            self._clip_outliers()
-        return self
-    
-    def _clip_outliers(self):
-        """Clip extreme values using percentile-based approach."""
-        clip_pct = self.PARA.get('clip_pct')
-        if clip_pct is not None and self.label is not None:
-            lower = self.label.quantile(clip_pct)
-            upper = self.label.quantile(1 - clip_pct)
-            self.label = self.label.clip(lower, upper)
-    
-    def get_label(self):
-        return self.label
-    
-    def get_name(self):
-        return f"{self.label_type}_{self.PARA['horizon']}_{self.PARA['method']}"
+    """Base class for label generation with registry pattern."""
+    # ✅ IMPLEMENTED: Registry pattern, calculate pipeline, risk adjustment, discretize, winsorize
 ```
 
-### **2. Label Registry Functions**
+### **3. Label Registry Functions (Registry Pattern)**
 
 ```python
-@Label.register("forward_return")
-def label_forward_return(self):
-    """Calculate forward returns with various methods."""
-    horizon = self.PARA.get('horizon', 1)
-    column = self.PARA.get('column', 'close')
-    method = self.PARA.get('method', 'return')
-    lag = self.PARA.get('lag', 0)
-    
-    prices = self.df[column]
-    
-    if method == 'return':
-        # Simple return: (p[t+h] - p[t]) / p[t]
-        future_prices = prices.shift(-horizon - lag)
-        self.label = (future_prices - prices) / prices
-        
-    elif method == 'log_return':
-        # Log return: log(p[t+h] / p[t])
-        future_prices = prices.shift(-horizon - lag)
-        self.label = np.log(future_prices / prices)
-        
-    elif method == 'price_diff':
-        # Absolute price change: p[t+h] - p[t]
-        future_prices = prices.shift(-horizon - lag)
-        self.label = future_prices - prices
-        
-    else:
-        raise ValueError(f"Unknown method: {method}")
-
-@Label.register("directional")
-def label_directional(self):
-    """Create directional labels (up/down/neutral)."""
-    horizon = self.PARA.get('horizon', 1)
-    column = self.PARA.get('column', 'close')
-    threshold = self.PARA.get('threshold', 0.001)  # 0.1% threshold
-    lag = self.PARA.get('lag', 0)
-    
-    prices = self.df[column]
-    future_prices = prices.shift(-horizon - lag)
-    returns = (future_prices - prices) / prices
-    
-    # Create directional labels
-    self.label = pd.Series(0, index=returns.index)
-    self.label[returns > threshold] = 1    # Up
-    self.label[returns < -threshold] = -1  # Down
-    # Neutral (0) for small movements
-
-@Label.register("quantile_class")
-def label_quantile_class(self):
-    """Create quantile-based classification labels."""
-    horizon = self.PARA.get('horizon', 1)
-    column = self.PARA.get('column', 'close')
-    n_classes = self.PARA.get('n_classes', 3)
-    lag = self.PARA.get('lag', 0)
-    
-    prices = self.df[column]
-    future_prices = prices.shift(-horizon - lag)
-    returns = (future_prices - prices) / prices
-    
-    # Create quantile-based labels
-    self.label = pd.cut(returns, bins=n_classes, labels=False) - (n_classes // 2)
+# ✅ IMPLEMENTED: return, log_return, price_diff, ma_return registry functions
 ```
 
-### **3. Label Definition Architecture**
+### **4. Label Definition Architecture**
 
 ```python
 LABEL_DEFINITIONS = {
-    'ret_1h': {
-        'params': {'horizon': [1, 3, 5, 15], 'method': ['return']},
-        'conditions': lambda horizon, method: horizon > 0,
-        'naming': lambda horizon, method: f'ret_{horizon}h_{method}',
-        'clip_pct': 0.01,  # Clip extreme 1% outliers
+    # Basic forward returns
+    'ret_basic': {
+        'params': {
+            'LB': [1, 5, 15]  # Updated parameter name
+        },
+        'conditions': lambda LB: LB > 0,
+        'naming': lambda LB: f'return[LB={LB}]',  # Updated naming format
+        'winsorize_pct': None,  # Updated default
     },
-    'dir_short': {
-        'params': {'horizon': [1, 5], 'threshold': [0.001, 0.005]},
-        'conditions': lambda horizon, threshold: True,
-        'naming': lambda horizon, threshold: f'dir_{horizon}h_thr{int(threshold*1000)}',
-        'clip_pct': None,
+    
+    'ret_log': {
+        'params': {
+            'LB': [1, 5, 15]  # Updated parameter name
+        },
+        'conditions': lambda LB: LB > 0,
+        'naming': lambda LB: f'log_return[LB={LB}]',  # Updated naming format
+        'winsorize_pct': None,  # Updated default
     },
-    'class_med': {
-        'params': {'horizon': [15, 60], 'n_classes': [3, 5]},
-        'conditions': lambda horizon, n_classes: n_classes % 2 == 1,  # Odd classes only
-        'naming': lambda horizon, n_classes: f'class_{horizon}h_{n_classes}c',
-        'clip_pct': None,
+    
+    # MA-smoothed returns
+    'ret_ma': {
+        'params': {
+            'LB': [5, 15], 
+            'ma_window': [3, 5]  # Method-specific parameter
+        },
+        'conditions': lambda LB, ma_window: LB >= ma_window,
+        'naming': lambda LB, ma_window: f'ma_return[LB={LB}][ma_window={ma_window}]',  # Updated naming format
+        'winsorize_pct': None,  # Updated default
+    },
+    
+    # Risk-adjusted returns
+    'ret_risk': {
+        'params': {
+            'LB': [5, 15], 
+            'rescale': [{'method': 'volatility', 'nscale': 10}, {'method': 'volatility', 'nscale': 20}]  # Updated parameter structure
+        },
+        'conditions': lambda LB, rescale: LB > 1,
+        'naming': lambda LB, rescale: f'return[LB={LB}][rescale={rescale}]',  # Updated naming format
+        'winsorize_pct': None,  # Updated default
+    },
+    
+    # Directional labels (binary)
+    'dir_binary': {
+        'params': {
+            'LB': [1, 5], 
+            'discretize': [{'method': 'binary', 'threshold': 0.001}, {'method': 'binary', 'threshold': 0.005}]  # Updated parameter structure
+        },
+        'conditions': lambda LB, discretize: True,
+        'naming': lambda LB, discretize: f'return[LB={LB}][discretize={discretize}]',  # Updated naming format
+        'winsorize_pct': None,
+    },
+    
+    # Quantile-based classification
+    'class_quantile': {
+        'params': {
+            'LB': [5, 15], 
+            'discretize': [{'method': 'quantile', 'bin': 3}, {'method': 'quantile', 'bin': 5}]  # Updated parameter structure
+        },
+        'conditions': lambda LB, discretize: discretize['bin'] % 2 == 1,
+        'naming': lambda LB, discretize: f'return[LB={LB}][discretize={discretize}]',  # Updated naming format
+        'winsorize_pct': None,
+    },
+    
+    # Combined: Risk-adjusted + Directional
+    'risk_dir': {
+        'params': {
+            'LB': [15], 
+            'rescale': [{'method': 'volatility', 'nscale': 10}],  # Updated parameter structure
+            'discretize': [{'method': 'binary', 'threshold': 0.0}]  # Updated parameter structure
+        },
+        'conditions': lambda LB, rescale, discretize: True,
+        'naming': lambda LB, rescale, discretize: f'return[LB={LB}][rescale={rescale}][discretize={discretize}]',  # Updated naming format
+        'winsorize_pct': None,
     }
 }
 ```
 
-### **4. Factory Functions**
+### **5. Factory Functions**
 
 ```python
 def generate_label_objects(df: pd.DataFrame, label_definitions: dict) -> list:
@@ -222,8 +177,8 @@ def generate_label_objects(df: pd.DataFrame, label_definitions: dict) -> list:
             if config['conditions'](**param_dict):
                 label_obj = Label(
                     df=df,
-                    label_type=label_name,
-                    clip_pct=config.get('clip_pct', None),
+                    label_type=param_dict.get('method', 'return'),  # Use method as label_type (registry key)
+                    winsorize_pct=config.get('winsorize_pct', None),
                     **param_dict
                 )
                 label_obj.name = config['naming'](**param_dict)
@@ -232,15 +187,16 @@ def generate_label_objects(df: pd.DataFrame, label_definitions: dict) -> list:
     return label_objects
 
 def make_labels(df: pd.DataFrame, horizon: int = 1, method: str = 'return', 
-                column: str = 'close') -> pd.Series:
+                **kwargs) -> pd.Series:
     """
     Simple factory function for common label creation.
     
     For backward compatibility and simple use cases.
+    Supports all processing options: risk_adjust, discretize, etc.
     """
-    label_obj = Label(df=df, label_type='forward_return', 
-                     horizon=horizon, method=method, column=column)
-    return label_obj.calculate_label().get_label()
+    label_obj = Label(df=df, label_type=method,  # Use method as registry key
+                     horizon=horizon, **kwargs)
+    return label_obj.calculate().get_label()
 
 def create_dataset(df: pd.DataFrame, feature_objects: list, label_objects: list, 
                    min_periods: int = 100) -> dict:
@@ -266,7 +222,7 @@ def create_dataset(df: pd.DataFrame, feature_objects: list, label_objects: list,
     label_data = {}
     for l_obj in label_objects:
         label_name = getattr(l_obj, 'name', l_obj.get_name())
-        label_data[label_name] = l_obj.calculate_label().get_label()
+        label_data[label_name] = l_obj.calculate().get_label()
     
     # Create DataFrames
     features_df = pd.DataFrame(feature_data, index=df.index)
@@ -293,9 +249,10 @@ def create_dataset(df: pd.DataFrame, feature_objects: list, label_objects: list,
 ## 📋 Implementation TODO List
 
 ### **Phase 1: Core Label Infrastructure (Day 1-2)**
-- [ ] **Create `Label` base class** with registry pattern
-- [ ] **Implement basic label types**: `forward_return`, `directional`, `quantile_class`
-- [ ] **Add outlier clipping functionality** using percentile-based approach
+- [x] **Create `Label` base class** with registry pattern (✅ IMPLEMENTED & TESTED)
+- [x] **Implement basic label types**: `return`, `log_return`, `price_diff`, `ma_return` (✅ IMPLEMENTED & TESTED)
+- [x] **Add discretize functionality** using standalone function (✅ IMPLEMENTED & TESTED)
+- [x] **Add outlier clipping functionality** using percentile-based approach (✅ IMPLEMENTED & TESTED)
 - [ ] **Create `make_labels()` factory function** for backward compatibility
 
 ### **Phase 2: Label Definitions & Generation (Day 2-3)**
@@ -306,7 +263,7 @@ def create_dataset(df: pd.DataFrame, feature_objects: list, label_objects: list,
 
 ### **Phase 3: Dataset Creation & Alignment (Day 3-4)**
 - [ ] **Implement `create_dataset()`** function for feature-label alignment
-- [ ] **Handle time lags and forward-looking windows** properly
+- [I] **Handle time lags and forward-looking windows** properly
 - [ ] **Add data validation** (NaN handling, minimum periods)
 - [ ] **Create valid data masking** for train/test splits
 

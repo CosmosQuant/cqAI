@@ -1,6 +1,6 @@
 import time, pandas as pd, numpy as np
 from src.data import generate_test_data
-from src.features import fast_SMA, fast_std, _calculate_sr, fast_rank, generate_feature_objects
+from src.features import run_SMA, run_std, run_SR, fast_rank, generate_feature_objects
 
 # Set pandas display options to show more columns
 pd.set_option('display.max_columns', 10); pd.set_option('display.width', 1000); pd.set_option('display.max_colwidth', 1000)
@@ -51,7 +51,7 @@ print([getattr(f, 'name', f.get_name()) for f in feature_objects])  # Show first
 
 feature_obj = generate_feature_objects(df, feature_definitions=FEATURE_DEFINITIONS)
 t0 = time.time()
-results = {getattr(f, 'name', f.get_name()): f.calculate_feature().get_feature() for f in feature_obj}
+results = {getattr(f, 'name', f.get_name()): f.calculate().get_feature() for f in feature_obj}
 print(f"Feature calculation time: {time.time() - t0:.3f}s")
 # results to dataframe
 res = pd.DataFrame(results)

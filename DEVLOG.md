@@ -74,11 +74,7 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 - Performance benchmarking and memory usage optimization
 
 ######################################################################################
-## 2025-09-23
-
-### Goals
-- Update cqAI_main.py to use new data loading architecture
-
+## 2025-09-23 Finish the features/factors creations
 
 ### Work done
 - **Removed DataManager class** - Eliminated unnecessary complexity following YAGNI principle
@@ -97,7 +93,48 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 - **D-0011 — Registry pattern**: Decorator-based registration for clean feature function organization
 - **D-0012 — CRITICAL: Disable caching for safety**: Cache keys (`sma_{window}`) caused data confusion between close/volume/high/low
 
+######################################################################################
+## 2025-09-24 Finish the labels creations
+
+### Work done
+- [x] Implement discretize function in features.py
+- [x] Implement Label class with registry pattern in labels.py and test in test_label.py
+- [x] Fix discretize function to preserve NaN values in binary classification
+- [x] Combine discretize method and parameters into single discretize dictionary
+- [x] Change discretize default from {} to None for consistency
+- [x] Rename n_classes parameter to bin in discretize function
+- [x] Refactor risk adjustment parameters: rename risk_adjust to method, vol_window to nscale, combine into rescale dict
+- [x] Update get_name method to group dictionary parameters: return[rescale={method=volatility,nscale=10}][discretize={method=quantile,bin=5}]
+- [x] Fix quantile method to use pd.qcut for equal-frequency bins instead of pd.cut for equal-width bins
+- [x] Complete Phase 1 core infrastructure: Label class, 4 label types, discretize/winsorize functions, risk adjustment
+- [x] Refactor fast_SMA to run_SMA using optimized implementation from temp.md reference
+- [x] Rename fast_std to run_std and fast_zscore to run_zscore for consistency
+- [x] Update all function references and imports across the codebase
+- [x] Implement sophisticated run_std with Numba JIT optimization and proper edge case handling
+- [x] Improve run_zscore with proactive zero-volatility handling, input validation, and comprehensive documentation
+- [x] Add mu parameter to run_zscore for constant mean option and refactor _calculate_sr to use run_zscore
+- [x] Rename _calculate_sr to run_SR for consistency with other run_* functions
+- [x] Improve winsorize function: rename pct to winsor_pct, add parameter validation (0 <= winsor_pct < 0.5), optimize performance with single quantile call
+
+
+### Decisions
+
+
 ### TODO
+- [ ] test all customized functions
+- [ ] check all features class
+- [ ] check all operators class
+- [ ] combine X and Y - need align function? - maybe backfill, forwardfill as well? - pandas have
+- [ ] need a lag function which I am familiar with - to avoid mistakes
+- [ ] for all customized TA functions, verify with some quantlib package
+- [I] a real test of all features - compare results vs R or excel outputs
+- [ ] furtherly increase the speed of SMA and others (like using parrallel)
+- [ ] in def winsorize: rolling vs global; other winsorize methods
+
+- [ ] need to go back to handle practical backtest data
+- [ ] discuss the plan to mimic R + Cpp backtest engine - for old fashion test
+
+- deal with 'lag': kwargs.get('lag', 0), # Time lag offset
 - Add remaining features categories from R code
 - Implement actual IB data format when data becomes available
 - Improve SR calculation: Better handling of std_series=0 cases (currently sets to 0, should consider mean value)
@@ -107,3 +144,7 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 - Consider adding factory functions only if multiple dynamic source selection is needed
 - Implement safe caching solution (Feature-level caching recommended)
 - Add data validation and error handling
+
+- other winsorize methods
+- rolling methods for winsorize, normalize, etc
+
