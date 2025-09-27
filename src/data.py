@@ -302,7 +302,5 @@ if __name__ == "__main__":
     
     # Test case with direct DataSource usage (concise syntax)
     ds_binance = BinanceDataSource() # ib_source = IBDataSource()
-    df = ds_binance.load_data(folder_path='rawdata/btc_csv/', market_keyword='btc', show_info=False)
+    df = ds_binance.load_data(folder_path='E:/DATA/crypto/binance/btc_csv', market_keyword='btc', show_info=False)
     print(df.head(), df.tail())
-    
-

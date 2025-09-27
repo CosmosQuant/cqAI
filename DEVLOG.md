@@ -119,6 +119,13 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 
 ### Decisions
 
+######################################################################################
+## 2025-09-25
+
+### Work done
+
+### Decisions
+
 
 ### TODO
 - [ ] test all customized functions
@@ -133,6 +140,8 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 
 - [ ] need to go back to handle practical backtest data
 - [ ] discuss the plan to mimic R + Cpp backtest engine - for old fashion test
+
+- [ ] single feature - overall analysis - references: [worldquant_alphathon] [old_Chinese_stock_codes]
 
 - deal with 'lag': kwargs.get('lag', 0), # Time lag offset
 - Add remaining features categories from R code

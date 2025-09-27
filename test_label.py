@@ -1,6 +1,6 @@
 import time, pandas as pd, numpy as np
 from src.data import generate_test_data
-from src.features import run_SMA, run_std, run_SR, fast_rank, generate_feature_objects, discretize
+from src.features import run_SMA, run_std, run_SR, fast_rank, create_features, discretize
 from src.labels import Label
 
 # Set pandas display options to show more columns

@@ -286,9 +286,8 @@ class Feature:
         
         # Common parameters
         self.PARA = {
-            'winsorize_pct': kwargs.get('winsorize_pct', None),
-            'method_norm': kwargs.get('method_norm', None),
-            'norm_window': kwargs.get('norm_window', 1000),
+            'winsorize': kwargs.get('winsorize', None),  # e.g. {'pct': 0.01}
+            'normalize': kwargs.get('normalize', None),  # e.g. {'method': 'rank', 'window': 100}
         }
         
         # Feature-specific parameters
@@ -311,40 +310,56 @@ class Feature:
         # Run feature logic
         self._FEATURE_REGISTRY[self.feature_type](self)
         
+        # Validate that the feature function set self.feature
+        if self.feature is None:
+            raise ValueError(
+                f"Feature function '{self.feature_type}' failed to set self.feature. "
+                f"Registered functions must assign the result to self.feature, not return it."
+            )
+        
         # Optional winsorizing
-        if self.PARA.get('winsorize_pct') is not None:
+        if self.PARA.get('winsorize') is not None:
             self.winsorize()
         
         # Optional normalization
-        if self.PARA.get('method_norm') is not None:
-            self.normalize_feature()
+        if self.PARA.get('normalize') is not None:
+            self.normalize()
         
         return self
     
-    def winsorize(self):
+    def winsorize(self, winsorize_config=None):
         """Winsorize the feature to remove outliers"""
         if self.feature is None:
             raise ValueError("Feature must be calculated before winsorizing")
         
-        winsorize_pct = self.PARA.get('winsorize_pct')
-        if winsorize_pct is None:
+        if winsorize_config is None:
+            winsorize_config = self.PARA.get('winsorize', None)
+        
+        if winsorize_config is None:
             return self
 
+        winsorize_pct = winsorize_config.get('pct')
         self.feature = winsorize(self.feature, winsorize_pct)
         return self
     
-    def normalize_feature(self, method=None, window=None):
+    def normalize(self, normalize_config=None):
         """Apply normalization: z-score or rank"""
         if self.feature is None:
             raise ValueError("Feature must be calculated before normalization")
         
-        if method is None:
-            method = self.PARA.get('method_norm', None)
-        if window is None:
-            window = self.PARA.get('norm_window', 1000)
+        if normalize_config is None:
+            normalize_config = self.PARA.get('normalize', None)
+        
+        if normalize_config is None:
+            return self
+        
+        method = normalize_config.get('method')
+        window = normalize_config.get('window')
         
         if method is None:
-            return self
+            raise ValueError("normalize config must specify 'method'")
+        if window is None:
+            raise ValueError("normalize config must specify 'window'")
         
         if method == 'rank':
             self.feature = fast_rank(self.feature, window)
@@ -359,16 +374,36 @@ class Feature:
     
     def get_name(self):
         """Generate feature name based on parameters"""
-        # Override in subclasses or use naming function
-        return f"{self.feature_type}_{self.PARA}"
+        # Start with base name (if custom name exists, use it)
+        if hasattr(self, 'name'):
+            base_name = self.name
+        else:
+            base_name = self.feature_type
+        
+        # Add winsorize suffix if present
+        if self.PARA.get('winsorize') is not None:
+            winsorize_config = self.PARA['winsorize']
+            pct = winsorize_config.get('pct')
+            if pct is not None:
+                base_name += f"_w{int(pct*100)}"
+        
+        # Add normalize suffix if present
+        if self.PARA.get('normalize') is not None:
+            normalize_config = self.PARA['normalize']
+            method = normalize_config.get('method')
+            window = normalize_config.get('window')
+            if method is not None and window is not None:
+                base_name += f"_{method}{window}"
+        
+        return base_name
 
-def generate_feature_objects(df: pd.DataFrame, feature_definitions: dict) -> list:
+def create_features(df: pd.DataFrame, feature_combo: dict) -> list:
     """Generate all possible Feature objects with parameter combinations"""
     import itertools
         
     feature_objects = []
     
-    for feature_name, config in feature_definitions.items():
+    for feature_name, config in feature_combo.items():
         param_names = list(config['params'].keys())
         param_values = list(config['params'].values())
         
@@ -376,13 +411,26 @@ def generate_feature_objects(df: pd.DataFrame, feature_definitions: dict) -> lis
             param_dict = dict(zip(param_names, combination))
             
             if config['conditions'](**param_dict):
+                # Check for parameter conflicts
+                conflicts = []
+                if 'winsorize' in param_dict and 'winsorize' in config:
+                    conflicts.append('winsorize')
+                if 'normalize' in param_dict and 'normalize' in config:
+                    conflicts.append('normalize')
+                
+                if conflicts:
+                    raise ValueError(
+                        f"Parameter conflict in feature '{feature_name}': "
+                        f"{conflicts} found in both 'params' and config level. "
+                        f"Move these parameters to config level only."
+                    )
+                
                 # Create Feature object
                 feature_obj = Feature(
                     df=df,
                     feature_type=feature_name,
-                    winsorize_pct=config.get('winsorize_pct', None),
-                    method_norm=config.get('method_norm', None),
-                    norm_window=config.get('norm_window', 1000),
+                    winsorize=config.get('winsorize', None),
+                    normalize=config.get('normalize', None),
                     **param_dict
                 )
                 # Set custom name
@@ -392,23 +440,28 @@ def generate_feature_objects(df: pd.DataFrame, feature_definitions: dict) -> lis
     return feature_objects
 
 # TODO - rolling vs global; other winsorize methods
-def winsorize(series: pd.Series, winsor_pct: float | None) -> pd.Series:
-    """Return a winsorized copy of `series` clipped at the given percentile."""
-    if winsor_pct is None:
-        return series
-
-    if winsor_pct == 0:
-        return series
+def winsorize(series: pd.Series, winsor_pct: float | None = None, *, copy: bool = True) -> pd.Series:
+    """Clip to [p, 1-p] quantiles; robust to NANs; fast on large inputs."""
+    if winsor_pct is None or winsor_pct == 0:
+        return series.copy() if copy else series
     
-    if winsor_pct < 0 or winsor_pct >= 0.5:
-        raise ValueError(f"winsor_pct must be in range [0, 0.5), got {winsor_pct}")
+    if not (0 < winsor_pct < 0.5):
+        raise ValueError(f"winsor_pct must be in (0, 0.5), got {winsor_pct}")
     
-    # Performance optimization: single quantile call
-    quantiles = series.quantile([winsor_pct, 1 - winsor_pct])
-    lower = quantiles.iloc[0]
-    upper = quantiles.iloc[1]
+    # Work on a numeric ndarray once; copy controls whether we allocate a new buffer
+    s = series.to_numpy(dtype="float64", copy=copy)
     
-    return series.clip(lower, upper)
+    # Fast quantiles that ignore NANs
+    q = np.nanquantile(s, [winsor_pct, 1 - winsor_pct])
+    lower, upper = float(q[0]), float(q[1])
+    
+    # If quantiles are NaN (empty/all-NaN series), just return input unchanged
+    if np.isnan(lower) or np.isnan(upper):
+        return series.copy() if copy else series
+    
+    # In-place clip (if copy=False this mutates original array)
+    np.clip(s, lower, upper, out=s)
+    return pd.Series(s, index=series.index, name=series.name)
 
 # TODO - other normalization methods
 def discretize(series: pd.Series, method: str, threshold: float = 0.0, bin: int = 5) -> pd.Series:
@@ -635,14 +688,3 @@ if __name__ == "__main__":
     
     print("All tests completed")
 
-
-
-
-    # method_norm = None    
-    # factor_MAX = Factor(full_df, factor_type='MAX', ma_short=3, ma_long=40, method_norm=method_norm, norm_window=7200).calculate_factor().get_factor()    
-    # factor_RSI = Factor(full_df, factor_type='RSI', rsi_window=14, norm_window=7200).calculate_factor().get_factor()
-    # factor_ROC = Factor(full_df, factor_type='ROC', roc_window=10, method_norm=method_norm, norm_window=7200).calculate_factor().get_factor()    
-    # # combine all factors into a single dataframe
-    # res = pd.DataFrame({'factor_MAX': factor_MAX, 'factor_RSI': factor_RSI, 'factor_ROC': factor_ROC,})
-    # print("Factors DataFrame:")
-    # print(res.tail(10))

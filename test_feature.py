@@ -1,6 +1,6 @@
 import time, pandas as pd, numpy as np
 from src.data import generate_test_data
-from src.features import run_SMA, run_std, run_SR, fast_rank, generate_feature_objects
+from src.features import run_SMA, run_std, run_SR, fast_rank, create_features
 
 # Set pandas display options to show more columns
 pd.set_option('display.max_columns', 10); pd.set_option('display.width', 1000); pd.set_option('display.max_colwidth', 1000)
@@ -25,31 +25,29 @@ df = generate_test_data(100000, 42)
 # print(sr_result.tail(10))
 
 # Test 5: New Feature Object Architecture
-FEATURE_DEFINITIONS = {
+FEATURE_COMBO = {
     'maratio': {
         'params': {'short': [1, 3], 'long': [10, 40, 100]},
         'conditions': lambda short, long: short < long,
         'naming': lambda short, long: f'maratio_{short}_{long}',
-        'winsorize_pct': 0.01,
-        'method_norm': 'rank',
-        'norm_window': 1000,
+        'winsorize': {'pct': 0.01},
+        'normalize': {'method': 'rank', 'window': 1000},
     },
     'sr': {
         'params': {'ma_window': [1, 3], 'sr_window': [5, 22, 100]},
         'conditions': lambda ma_window, sr_window: sr_window > 1,
         'naming': lambda ma_window, sr_window: f'sr_{ma_window}_{sr_window}',
-        'winsorize_pct': None,
-        'method_norm': None,
-        'norm_window': 1000,
+        'winsorize': None,
+        'normalize': {'method': 'rank', 'window': 1000},
     }
 }
 
 # Generate all possible Feature objects
-feature_objects = generate_feature_objects(df, feature_definitions=FEATURE_DEFINITIONS)
+feature_objects = create_features(df, feature_combo=FEATURE_COMBO)
 # Show feature names
 print([getattr(f, 'name', f.get_name()) for f in feature_objects])  # Show first 5
 
-feature_obj = generate_feature_objects(df, feature_definitions=FEATURE_DEFINITIONS)
+feature_obj = create_features(df, feature_combo=FEATURE_COMBO)
 t0 = time.time()
 results = {getattr(f, 'name', f.get_name()): f.calculate().get_feature() for f in feature_obj}
 print(f"Feature calculation time: {time.time() - t0:.3f}s")

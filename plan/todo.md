@@ -22,6 +22,7 @@
   - 抽象基类 `Splitter(split)`
   - `WalkForwardSplitter` 基础实现 (OOP扩展点)
   - `build_splitter(cv_cfg)` 工厂方法
+  - from sklearn.model_selection import train_test_split
 - [ ] **models.py**: 
   - 抽象基类 `BaseModel(fit, predict)`
   - Ridge和LGB封装 (OOP扩展点)
