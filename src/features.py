@@ -15,26 +15,26 @@ def configure_pandas_display():
 
 # ---------- core functions ----------
 
-@njit
+    @njit
 def _run_sma_inner(arr: np.ndarray, window: int, exact: bool) -> np.ndarray:
-    n = len(arr)
-    result = np.empty(n)
-    result[:] = np.nan
+        n = len(arr)
+        result = np.empty(n)
+        result[:] = np.nan
 
-    if not exact:
+        if not exact:
         cumsum = 0.0
-        for i in range(min(window - 1, n)):
+            for i in range(min(window - 1, n)):
             cumsum += arr[i]
             result[i] = cumsum / (i + 1)
 
-    if n >= window:
+        if n >= window:
         window_sum = np.sum(arr[:window])
-        result[window - 1] = window_sum / window
-        for i in range(window, n):
-            window_sum += arr[i] - arr[i - window]
-            result[i] = window_sum / window
+            result[window - 1] = window_sum / window
+            for i in range(window, n):
+                window_sum += arr[i] - arr[i - window]
+                result[i] = window_sum / window
 
-    return result
+        return result
 
 def run_SMA(series: pd.Series, window: int, exact: bool = True) -> pd.Series:
     """
@@ -106,7 +106,7 @@ def _rolling_std(arr: np.ndarray, window: int, exact: bool=True, ddof: int=1) ->
             if var < 0.0:
                 var = 0.0              # clamp FP noise
             out[i] = np.sqrt(var)
-        else:
+    else:
             out[i] = np.nan
 
     return out
@@ -185,7 +185,7 @@ def run_zscore(series: pd.Series, window: int, exact=True, sample=True, mu=None)
     valid_mask = (sigma != 0) & ~sigma.isna()
     if valid_mask.any():
         z[valid_mask] = (series[valid_mask] - mu_series[valid_mask]) / sigma[valid_mask]
-    
+
     return z
 
 def run_SR(series: pd.Series, smooth_window: int, sr_window: int, max_abs: float = 10.0) -> pd.Series:
@@ -214,6 +214,39 @@ def run_SR(series: pd.Series, smooth_window: int, sr_window: int, max_abs: float
     sr = sr.clip(-max_abs, max_abs)
     
     return sr
+
+def run_roc(series: pd.Series, window: int) -> pd.Series:
+    """
+    Calculate Rate of Change (ROC) efficiently
+    TODO - other versions: diff, logdiff(be careful of negative values)
+    Args:
+        series: Input time series
+        window: Lookback window for ROC calculation
+        
+    Returns:
+        pandas Series with ROC values: (current - past) / past
+    """
+    if window <= 0:
+        raise ValueError("window must be positive")
+    
+    if len(series) == 0:
+        return pd.Series(dtype='float64', index=series.index)
+    
+    # More efficient than pct_change for large datasets
+    # Handles division by zero proactively and ensures float64 dtype
+    series_shifted = series.shift(window)
+    
+    # Ensure consistent float64 dtype to avoid int casting issues
+    series_vals = series.values.astype(np.float64)
+    series_shifted_vals = series_shifted.values.astype(np.float64)
+    
+    roc_result = np.divide(
+        series_vals - series_shifted_vals,
+        series_shifted_vals,
+        out=np.full_like(series_vals, np.nan, dtype=np.float64),
+        where=(series_shifted_vals != 0)
+    )
+    return pd.Series(roc_result, index=series.index)
 
 def fast_rank(series: pd.Series, window: int, exact=False) -> pd.Series:
     """
@@ -293,7 +326,7 @@ class Feature:
         # Feature-specific parameters
         for k, v in kwargs.items():
             self.PARA[k] = v
-    
+
     @classmethod
     def register(cls, name):
         """Decorator to register feature calculation functions"""
@@ -301,7 +334,7 @@ class Feature:
             cls._FEATURE_REGISTRY[name] = fn
             return fn
         return decorator
-    
+
     def calculate(self):
         """Main entry: calculate -> winsorize -> normalize"""
         if self.feature_type not in self._FEATURE_REGISTRY:
@@ -338,10 +371,10 @@ class Feature:
         if winsorize_config is None:
             return self
 
-        winsorize_pct = winsorize_config.get('pct')
-        self.feature = winsorize(self.feature, winsorize_pct)
+        pct = winsorize_config.get('pct')
+        self.feature = winsorize(self.feature, winsor_pct=pct)
         return self
-    
+
     def normalize(self, normalize_config=None):
         """Apply normalization: z-score or rank"""
         if self.feature is None:
@@ -355,12 +388,12 @@ class Feature:
         
         method = normalize_config.get('method')
         window = normalize_config.get('window')
-        
+
         if method is None:
             raise ValueError("normalize config must specify 'method'")
         if window is None:
             raise ValueError("normalize config must specify 'window'")
-        
+
         if method == 'rank':
             self.feature = fast_rank(self.feature, window)
         elif method == 'zscore':
@@ -368,7 +401,7 @@ class Feature:
         else:
             raise ValueError(f"Unsupported normalization method: {method}")
         return self
-    
+
     def get_feature(self):
         return self.feature
     
@@ -379,13 +412,23 @@ class Feature:
             base_name = self.name
         else:
             base_name = self.feature_type
+            
+            # Add feature-specific parameters (exclude processing parameters)
+            feature_params = []
+            exclude_keys = {'winsorize', 'normalize'}
+            for key, value in self.PARA.items():
+                if key not in exclude_keys:
+                    feature_params.append(str(value))
+            
+            if feature_params:
+                base_name += '_' + '_'.join(feature_params)
         
         # Add winsorize suffix if present
         if self.PARA.get('winsorize') is not None:
             winsorize_config = self.PARA['winsorize']
             pct = winsorize_config.get('pct')
             if pct is not None:
-                base_name += f"_w{int(pct*100)}"
+                base_name += f"_wzr{int(pct*100)}"
         
         # Add normalize suffix if present
         if self.PARA.get('normalize') is not None:
@@ -433,11 +476,43 @@ def create_features(df: pd.DataFrame, feature_combo: dict) -> list:
                     normalize=config.get('normalize', None),
                     **param_dict
                 )
-                # Set custom name
-                feature_obj.name = config['naming'](**param_dict)
+                # Set custom name if provided, otherwise use default get_name()
+                if 'naming' in config:
+                    feature_obj.name = config['naming'](**param_dict)
                 feature_objects.append(feature_obj)
     
+    # Check for duplicate feature names
+    _check_duplicate_names(feature_objects)
+    
     return feature_objects
+
+def _check_duplicate_names(feature_objects: list) -> None:
+    """Check for duplicate feature names and warn if found"""
+    import warnings
+    from collections import defaultdict
+    
+    name_counts = defaultdict(int)
+    name_to_features = defaultdict(list)
+    
+    for feature_obj in feature_objects:
+        name = getattr(feature_obj, 'name', feature_obj.get_name())
+        name_counts[name] += 1
+        name_to_features[name].append(feature_obj)
+    
+    # Find duplicates
+    duplicates = {name: count for name, count in name_counts.items() if count > 1}
+    
+    if duplicates:
+        warnings.warn(
+            f"Duplicate feature names detected! This will cause DataFrame column overwrites:\n" +
+            "\n".join([
+                f"  '{name}' appears {count} times"
+                for name, count in duplicates.items()
+            ]) + 
+            "\nConsider using different 'naming' functions to create unique names.",
+            UserWarning,
+            stacklevel=3
+        )
 
 # TODO - rolling vs global; other winsorize methods
 def winsorize(series: pd.Series, winsor_pct: float | None = None, *, copy: bool = True) -> pd.Series:
@@ -500,12 +575,14 @@ def discretize(series: pd.Series, method: str, threshold: float = 0.0, bin: int 
         centered_labels = quantile_labels - (bin // 2)
         return centered_labels.astype('float64')
         
-    else:
+        else:
         raise ValueError(f"Unknown method '{method}'. Supported: 'binary', 'quantile'.")
 
 
 
-
+# TODO - add more features
+# TODO - use cache to avoid re-calculating the same feature.
+# But have to be careful with sr(close) vs sr(close.diff()) vs sr(open)
 @Feature.register("maratio")
 def feature_maratio(self):
     short = self.PARA.get('short', 5)
@@ -531,27 +608,49 @@ def feature_rsi(self):
     window = self.PARA.get("window", 14)
     delta = self.df["close"].diff()
     
-    # Use run_SMA instead of rolling().mean() for better performance
-    gain_series = delta.where(delta > 0, 0)
-    loss_series = -delta.where(delta < 0, 0)
+    # Optimize: use numpy arrays to avoid multiple pandas operations
+    delta_values = delta.values
+    gain_values = np.where(delta_values > 0, delta_values, 0.0)
+    loss_values = np.where(delta_values < 0, -delta_values, 0.0)
+    
+    # Convert back to Series for run_SMA (maintains index alignment)
+    gain_series = pd.Series(gain_values, index=delta.index)
+    loss_series = pd.Series(loss_values, index=delta.index)
     
     gain = run_SMA(gain_series, window)
     loss = run_SMA(loss_series, window)
     
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    self.feature = (rsi - 50) / 50
-    # Use boolean indexing for better performance
-    self.feature[np.isinf(self.feature)] = 0
+    # RSI calculation with proper edge case handling
+    gain_vals = gain.values
+    loss_vals = loss.values
+    
+    # Handle different scenarios correctly:
+    # - avg_loss == 0 且 avg_gain > 0 => RS = ∞ => RSI = 100
+    # - avg_loss == 0 且 avg_gain == 0 => RSI = 50 (完全无波动)
+    # - avg_gain == 0 且 avg_loss > 0 => RSI = 0
+    rsi = np.full_like(gain_vals, np.nan)
+    
+    # Normal case: both gain and loss are non-zero
+    normal_mask = (loss_vals != 0)
+    rs_normal = gain_vals[normal_mask] / loss_vals[normal_mask]
+    rsi[normal_mask] = 100 - (100 / (1 + rs_normal))
+    
+    # Edge case: loss == 0 but gain > 0 => RSI = 100
+    rsi[(loss_vals == 0) & (gain_vals > 0)] = 100.0
+    
+    # Edge case: loss == 0 and gain == 0 => RSI = 50 (neutral)
+    rsi[(loss_vals == 0) & (gain_vals == 0)] = 50.0
+    
+    # Edge case: gain == 0 but loss > 0 => RSI = 0
+    rsi[(gain_vals == 0) & (loss_vals > 0)] = 0.0
+    
+    # Transform to [-1, +1] range
+    self.feature = pd.Series((rsi - 50) / 50, index=delta.index)
 
 @Feature.register("roc")
 def feature_roc(self):
-    """
-    ROC (Rate of Change) feature
-    TODO - other versions: diff, logdiff(be careful of negative values)
-    """
     window = self.PARA.get("window", 10)
-    self.feature = self.df["close"].pct_change(window)
+    self.feature = run_roc(self.df["close"], window)
 
 
 
@@ -687,4 +786,5 @@ if __name__ == "__main__":
     print(f"STD(20) calculated: {len(std_20)} points")
     
     print("All tests completed")
+
 

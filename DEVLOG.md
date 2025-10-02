@@ -1,4 +1,4 @@
-DEVLOG.md
+﻿DEVLOG.md
 
 -- -- -- TEMPLATE
 ######################################################################################
@@ -9,14 +9,14 @@ DEVLOG.md
 ### Work done
 
 ### Decisions
-- **D-0001 — XXX**: 
-- **D-0002 — XXX**: 
+- **D-0001 鈥?XXX**: 
+- **D-0002 鈥?XXX**: 
 
 ### TODO / Next
 - XX
 - XX
 
-### Future Work (not urgent)
+### Random Thoughts
 
 
 ######################################################################################
@@ -46,11 +46,11 @@ DEVLOG.md
   - Column reordering to standard format
 
 ### Decisions
-- **D-0003 — Use constants for timestamp columns**: Moved hardcoded timestamp column names to `TIMESTAMP_COLUMNS` constant for better maintainability
-- **D-0004 — Config-driven architecture**: DataSource subclasses only need configuration, no method overrides needed
-- **D-0005 — UTC standardization**: All datetime columns automatically converted to UTC for consistency
-- **D-0006 — Performance over readability**: Chose optimized pandas operations (`sort=False, copy=False`) for better performance with large datasets
-- **D-0007 — Functional approach for file reading**: Used list comprehensions instead of loops for more Pythonic and R-like elegance
+- **D-0003 鈥?Use constants for timestamp columns**: Moved hardcoded timestamp column names to `TIMESTAMP_COLUMNS` constant for better maintainability
+- **D-0004 鈥?Config-driven architecture**: DataSource subclasses only need configuration, no method overrides needed
+- **D-0005 鈥?UTC standardization**: All datetime columns automatically converted to UTC for consistency
+- **D-0006 鈥?Performance over readability**: Chose optimized pandas operations (`sort=False, copy=False`) for better performance with large datasets
+- **D-0007 鈥?Functional approach for file reading**: Used list comprehensions instead of loops for more Pythonic and R-like elegance
 
 ### Usages:
 ```python
@@ -68,10 +68,6 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 # datetime: 2020-02-13 00:00:00+00:00 (UTC timezone)
 ```
 
-### Future Work (not urgent)
-- Implement data quality validation and reporting
-- Add data caching mechanisms for faster re-loading
-- Performance benchmarking and memory usage optimization
 
 ######################################################################################
 ## 2025-09-23 Finish the features/factors creations
@@ -87,15 +83,14 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 
 
 ### Decisions
-- **D-0008 — Remove DataManager**: DataManager was over-engineered for current needs, direct DataSource usage is simpler
-- **D-0009 — Feature naming convention**: Standardized to `{feature}_{param1}_{param2}` format (e.g., `maratio_5_20`). feature name doesn't allow '_'
-- **D-0010 — OOP Feature architecture**: Class-based approach for better extensibility and parameter management
-- **D-0011 — Registry pattern**: Decorator-based registration for clean feature function organization
-- **D-0012 — CRITICAL: Disable caching for safety**: Cache keys (`sma_{window}`) caused data confusion between close/volume/high/low
+- **D-0008 鈥?Remove DataManager**: DataManager was over-engineered for current needs, direct DataSource usage is simpler
+- **D-0009 鈥?Feature naming convention**: Standardized to `{feature}_{param1}_{param2}` format (e.g., `maratio_5_20`). feature name doesn't allow '_'
+- **D-0010 鈥?OOP Feature architecture**: Class-based approach for better extensibility and parameter management
+- **D-0011 鈥?Registry pattern**: Decorator-based registration for clean feature function organization
+- **D-0012 鈥?CRITICAL: Disable caching for safety**: Cache keys (`sma_{window}`) caused data confusion between close/volume/high/low
 
 ######################################################################################
 ## 2025-09-24 Finish the labels creations
-
 ### Work done
 - [x] Implement discretize function in features.py
 - [x] Implement Label class with registry pattern in labels.py and test in test_label.py
@@ -120,14 +115,79 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 ### Decisions
 
 ######################################################################################
-## 2025-09-25
+## 2025-09-29
+### Goals
+- quickly read relevant papers - *淇濊瘉鑷繁涓嶆槸鍦ㄨ嚜濞辫嚜涔愮殑灏忓湀瀛愰噷鑷猦igh* *maximize the leverage - 鍓嶄汉宸叉湁鐨勫伐浣滃綋鐒惰鍏堢湅*
+- first model - VB or EOM flow or PPT (Knowledge-driven AI)
+  - **SD1 - which universe, single or multiple** - probably single
+  - **SD2 - model choice**
 
 ### Work done
+- [X] Skim *From Deep Learning to LLMs: A Survey of AI in Quant* 鈫?extract 2鈥? key ideas relevant to targets/labeling in new framework
+      - development of alpha strategies typically includes four steps: data processing, model prediction, portfolio optimization, and order execution
+      - *manual labeling* of trading signals -> the use of *deep learning* models -> ultimately to an era of agent interaction and decision-making between LLM agents
+      - *long-term temporal dependence* TCN(Temporal Convolutional Networks) a Gated Recurrent Unit (GRU) 
+      - "LLMs primarily serve two roles - predictors and agents" - actually might be very useful in feature architecturing
+      - data - pairwise edges or hyperedges, usually represented as a graph 饾挗=V脳E,  where V is the set of nodes and E is the set of edges. static (LT trend) and dynamic (event based) relation
+      - Synthetic data
+      - [Symbolic factors (limited by operand and operator) vs ML factors] - encoder-decoder
+        - latent representation or ouput could be used as feature, "A graph-based framework for stock trend forecasting via mining Concept"
+        - temporal patterns (CNN, CNN-LSTM), spatial pattern (Implicit methods use self-attention mechanism, explicit methods use graphic structure) or Hybrid
+- [ ] Read *Quant 4.0* intro & conclusion only 鈫?note how it frames pipeline reformation; map to my State 脳 Driver 脳 Quality
+      - Encoder-decoder
+- [ ] For labeling: review *SAFE Machine Learning in Quant Trading* 鈫?focus only on calibration/robustness sections
+- [ ] Decide SD1: which universe for first MVP model (SPX only vs multi-asset futures)
+- [ ] Decide SD2: first model choice (simple CNN/Transformer vs AlphaNet baseline)
+- [ ] Define first target: distributional return (fwd_ret with cost-adjustment, 1 horizon only)
+- [ ] Implement minimal lag function + align X and Y for MVP dataset
+- [ ] Test pipeline with one signal family (VB or PPT) 鈫?verify data flow, Y alignment, evaluation metric (IC/RankIC)
 
 ### Decisions
 
+### Random Thoughts
+- AI+ in small sample world -- knowledge-driven AI, explainable AI 
+  - 鏃㈠彲浠ユ槸缁欏畾閫昏緫(e.g. PPT or end-of-day flow)璁〢I瀛︿範pattern锛屼篃鍙互鏄AI鏇碼uto鐨勫涔犳綔鍦ㄧ殑閫昏緫锛岀劧鍚巋uman鍘籸eview閫昏緫
+  - Symbolic Reasoning: "璐у竵瀹芥澗 鈫?閫氳儉棰勬湡涓婂崌 鈫?榛勯噾浠锋牸涓婃定" or Neural Reasoning or hybrid
+  - Event Embedding
+- 璺熻繃鍘荤殑鏃朵唬涓€鏍凤紝瀛︽湳鐣岀殑瀛﹁€呬滑渚濈劧鍦ㄥ鍕囩殑鎶婃渶鏂扮殑绉戠爺鐮旂┒灏濊瘯鐢ㄥ埌閲戣瀺閲岄潰鍘伙紙澶у閮介渶瑕侀挶鍟?cry锛?- 濡傛灉璇翠箣鍓嶆墽琛屽姏鍜岄€熷害鏄?010s棰嗚窇鑰呯殑edge锛岄偅涔堢幇鍦ˋI鐨勫簲鐢?(闈炰綋鍔涘伐浣滀笂锛岃€屾槸瀵箂mall sample渚濈劧寮哄ぇ鐨勪俊鎭彁鍙栬兘鍔涘拰Flexibility) - e.g. dynamic cor; LT temporal cor; 
+- [ ] call MOM at 10am
 
-### TODO
+### 2024-12-XX: Implemented PPT (Parametric Prediction Trading) MVP
+- **Core Architecture**: Gate 脳 Driver 脳 Quality 鈫?Heads model structure
+- **NumPy Implementation**: Pure NumPy/SciPy version for compatibility (27 parameters)
+- **PyTorch Implementation**: Created `run_PPT_torch.py` with automatic differentiation, GPU acceleration, and 60% code reduction
+- **Feature Engineering**: OHLC 鈫?returns, ATR, volatility, run-length, compression, momentum
+- **Training Pipeline**: L-BFGS-B optimization with Huber + BCE loss functions
+- **Multi-horizon Prediction**: Simultaneous prediction for H 鈭?{1,2,3} day horizons
+- **Successful Testing**: Converged training (loss: 1.064鈫?.033) with reasonable predictions
+- **Modular Design**: Extensible for monotonic splines, calibration, rolling training
+
+######################################################################################
+## 2025-09-29
+
+### Goals
+- Align PPT implementation with updated Gate × Driver × Quality spec
+
+### Work done
+- Refactored `run_PPT.py` feature pipeline to generate ret4 drawdown measures, 60-day compression ranks, and LT momentum inputs per the new PPT plan.
+- Redesigned PPTModel parameters and forward pass for run-length gating, convex drawdown mixing, ReLU driver, and bounded quality scalar with configurable heads.
+- Added guard standardisation and NaN-safe rolling ranks to stabilise optimisation, then verified synthetic training converges without warnings.
+
+### TODO / Next
+- [ ] Extend PPT flow with rolling training and backtesting once evaluation utilities are ready.
+- [ ] Review guard and quality scaling on real datasets to tune parameter bounds.
+- [ ] Consider migrating to PyTorch version for GPU acceleration when scaling to larger datasets.
+
+### Decisions
+- None
+######################################################################################
+## TODO
+
+### STUDY
+
+
+### CODING
+- [ ] in data standard columns, have to allow additional columns (those not contained in standard mapping)
 - [ ] test all customized functions
 - [ ] check all features class
 - [ ] check all operators class
@@ -137,6 +197,7 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 - [I] a real test of all features - compare results vs R or excel outputs
 - [ ] furtherly increase the speed of SMA and others (like using parrallel)
 - [ ] in def winsorize: rolling vs global; other winsorize methods
+- [ ] add neutralize member function
 
 - [ ] need to go back to handle practical backtest data
 - [ ] discuss the plan to mimic R + Cpp backtest engine - for old fashion test
@@ -148,7 +209,7 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 - Implement actual IB data format when data becomes available
 - Improve SR calculation: Better handling of std_series=0 cases (currently sets to 0, should consider mean value)
 
-### TODO - optional
+### Random Thoughts
 - for large n rank, use approximation method
 - Consider adding factory functions only if multiple dynamic source selection is needed
 - Implement safe caching solution (Feature-level caching recommended)
@@ -156,4 +217,8 @@ df = dm.load_data('binance', folder_path='data/btc_csv/')
 
 - other winsorize methods
 - rolling methods for winsorize, normalize, etc
+
+- Implement data quality validation and reporting
+- Add data caching mechanisms for faster re-loading
+- Performance benchmarking and memory usage optimization
 

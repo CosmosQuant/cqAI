@@ -42,6 +42,7 @@ quant_equity/
 
 
 --- config
+
 ```python
 # core/config.py
 from dataclasses import dataclass, field
@@ -85,5 +86,4 @@ class AppConfig:
     exec: ExecConfig
     backtest: BacktestConfig
     universe: List[str] = field(default_factory=lambda: ["US_TOP1500"])
-
 ```

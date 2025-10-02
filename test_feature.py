@@ -29,7 +29,12 @@ FEATURE_COMBO = {
     'maratio': {
         'params': {'short': [1, 3], 'long': [10, 40, 100]},
         'conditions': lambda short, long: short < long,
-        'naming': lambda short, long: f'maratio_{short}_{long}',
+        'naming': lambda short, long: f'maratiov1_{short}_{long}',
+    },
+    'maratio': {
+        'params': {'short': [1, 3], 'long': [10, 40, 100]},
+        'conditions': lambda short, long: short < long,
+        'naming': lambda short, long: f'maratiov2_{short}_{long}',
         'winsorize': {'pct': 0.01},
         'normalize': {'method': 'rank', 'window': 1000},
     },
